@@ -1,0 +1,34 @@
+public native int init();
+public native int open(byte[] url,int len);
+public native int getwidth(int id);
+public native int getheight(int id);
+public native int getframe(int id, byte[] buffer);
+public native int close(int id);
+public native int exit();
+
+1.调用顺序
+init->open->getwidth->getheight->getframe->close->exit
+
+2.API介绍
+(1)初始化,无论处理一路或者多路视频,只需最开始调用一次
+public native int init();
+
+(2)开始处理一路视频流,url是视频流地址,len是这个url byte[]的长度.返回值是个int型的数值,与url一一对应,用于后续操作.
+public native int open(byte[] url,int len);
+
+(3)获取视频的分辨率,输入参数是open返回的id,用于区分视频流,与所需访问视频流对应.返回值如果大于0,表示获取到正确的分辨率数值,否则表示底层尚未获取到视频信息.
+public native int getwidth(int id);
+public native int getheight(int id);
+
+(4)获取一帧RGB数据,id对应相应的url,buffer已经分配内存空间,底层会把rgb数据填充进来.
+[建议:可以事先用分配一个较大的内存,不需要等待获取分辨率成功后执行内存分配]
+public native int getframe(int id, byte[] buffer);
+
+(5)关闭一路视频流处理,id表示相应视频流,与之前open url对应
+public native int close(int id);
+
+(6)当所有打开的视频流被关闭,不再播放视频,清理
+public native int exit();
+
+3.测试demo
+java -Djava.library.path=../lib/ MediaPlayer

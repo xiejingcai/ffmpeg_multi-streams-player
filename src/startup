@@ -1,0 +1,2 @@
+export LD_LIBRARY_PATH=/home/zx/work/ffmpeg-java/lib/
+java -Djava.library.path=../lib/ MediaPlayer
