@@ -22,11 +22,6 @@ struct timespec wait;
 
 #define MPI_MAX 16
 #define BUF_MAX 5
-#define READING 1
-#define WRITING 2
-#define READ_ENA 3
-#define WRITE_ENA 4
-
 
 typedef struct FrameItem {
         AVFrame *avf;
@@ -218,13 +213,13 @@ void *do_ff_open(void *arg)
                                 goto exit_3;  
                         } 
                         if(got_picture){
-                                FrameItem *fip = FQPop(&pmpi->wQ);//get a frame buffer from write queue
-                                if(fip==NULL){//if there is no buffer in write queue
-                                        fip = FQPop(&pmpi->rQ);//fetch buffer from the read queue, which means frame lost in the case
+                                FrameItem *fip = FQPop(&pmpi->wQ);//get a vaild buffer from write queue
+                                if(fip==NULL){//if there is no available buffer in write queue
+                                        fip = FQPop(&pmpi->rQ);//fetch buffer from the read queue, which means frame lost
                                 }
                                 sws_scale(img_convert_ctx, (const uint8_t * const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, 
                                                 fip->avf->data, fip->avf->linesize); 
-                                FQPush(&pmpi->rQ,fip);//push the rgb buffer to the read queue
+                                FQPush(&pmpi->rQ,fip);//push the rgb data buffer to the read queue
 
                                 if(pmpi->state==1)
                                         pmpi->state = 2;
@@ -278,7 +273,7 @@ int ff_open(char *url, int len)
 #ifdef WINDOWS
 	struct timeval now;
 	gettimeofday(&now, NULL);
-	wait.tv_sec = now.tv_sec + 5;
+	wait.tv_sec = now.tv_sec + 2;
 	wait.tv_nsec = now.tv_usec * 1000;
 	pthread_cond_timedwait(&cond,&mutex,&wait);
 #endif
